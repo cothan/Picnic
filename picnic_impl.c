@@ -446,9 +446,15 @@ void mpc_substitution_verify(uint32_t* state[2], randomTape_t* rand, view_t* vie
 void mpc_matrix_mul(uint32_t* state[3], const uint32_t* matrix,
                     uint32_t* output[3], paramset_t* params, size_t players)
 {
-    for (uint32_t player = 0; player < players; player++) {
-        matrix_mul(state[player], matrix, output[player], params);
+    
+    #pragma acc data copy(state, matrix, output, params, players)
+    {
+        #pragma acc kernels
+        for (uint32_t player = 0; player < players; player++) {
+            matrix_mul(state[player], matrix, output[player], params);
+        }
     }
+
 }
 
 void mpc_LowMC_verify(view_t* view1, view_t* view2,
